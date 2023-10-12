@@ -7,8 +7,7 @@ using TMPro;
 public class GameManager : MonoBehaviourPunCallbacks
 {
     [Header("# Transform")]
-    [SerializeField]
-    Transform Canvous;
+    public Transform canvous;
     [SerializeField]
     Transform black;
     [SerializeField]
@@ -17,7 +16,11 @@ public class GameManager : MonoBehaviourPunCallbacks
     [SerializeField]
     TextMeshProUGUI text;
 
+    public static GameManager instance;
+
     bool isBlack = false;
+
+    bool isMyTurn = false;
 
     // 왼쪽 아래의 x 50, y 85
     const float START_X = 50 / 2f;
@@ -36,9 +39,15 @@ public class GameManager : MonoBehaviourPunCallbacks
     int xIndex;
     int yIndex;
 
+    PhotonView pv;
+
     // Start is called before the first frame update
     void Awake()
     {
+        instance = this;
+
+        pv = GetComponent<PhotonView>();
+
         for (int i = 0; i < MAXINDEX; i++)
         {
             for (int j = 0; j < MAXINDEX; j++)
@@ -59,6 +68,9 @@ public class GameManager : MonoBehaviourPunCallbacks
     // Update is called once per frame
     void Update()
     {
+        if (!isMyTurn)
+            return;
+
         if (Input.GetMouseButtonDown(0))
         {
             Vector3 mousePos = Input.mousePosition;
@@ -76,6 +88,9 @@ public class GameManager : MonoBehaviourPunCallbacks
                 return;
             }
 
+            isMyTurn = false;
+            pv.RPC("NowMyTurn", RpcTarget.Others, 123);
+
             stoneArr[yIndex, xIndex] = true;
             mousePos.x = (xIndex * GAP) + START_X;
             mousePos.y = (yIndex * GAP) + START_Y;
@@ -86,13 +101,12 @@ public class GameManager : MonoBehaviourPunCallbacks
                 temp = PhotonNetwork.Instantiate("Black", mousePos, Quaternion.identity).transform;
             else
                 temp = PhotonNetwork.Instantiate("White", mousePos, Quaternion.identity).transform;
-
-            isBlack = !isBlack;
-
-            temp.SetParent(Canvous);
         }
     }
 
+    /// <summary>
+    /// 서버에 연결시
+    /// </summary>
     public override void OnConnectedToMaster()
     {
         text.text += "Server Connecting..\n";
@@ -101,8 +115,33 @@ public class GameManager : MonoBehaviourPunCallbacks
         PhotonNetwork.JoinOrCreateRoom("Room1", options, null);
     }
 
+    /// <summary>
+    /// 방 만들었을때 실행
+    /// </summary>
+    public override void OnCreatedRoom()
+    {
+        text.text += "Create Room\n";
+        isMyTurn = true;
+    }
+
+    /// <summary>
+    /// 방에 입장했을 때
+    /// </summary>
     public override void OnJoinedRoom()
     {
         text.text += "Room Joined!\n";
+
+        isBlack = PhotonNetwork.IsMasterClient;
+    }
+
+    /// <summary>
+    /// [PunRPC] 있으면 원격으로 함수 호출 기능
+    /// </summary>
+    [PunRPC]
+    void NowMyTurn(int x)
+    {
+        isMyTurn = true;
+
+        Debug.Log(x);
     }
 }

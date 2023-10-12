@@ -1501,6 +1501,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1424309921}
   - component: {fileID: 1424309922}
+  - component: {fileID: 1424309923}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -1535,10 +1536,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dd656f3e32e19974b86432079a48e0eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Canvous: {fileID: 1454827596}
+  canvous: {fileID: 1454827596}
   black: {fileID: 8286168716826568182, guid: 9bd50325f4b8ee14ebf8158243cd6c25, type: 3}
   white: {fileID: 7210787088179949656, guid: b32fbe047e7f15b4590bd9cec437cb5f, type: 3}
   text: {fileID: 1797075367}
+--- !u!114 &1424309923
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1424309920}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
+  observableSearch: 2
+  ObservedComponents: []
+  sceneViewId: 1
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
 --- !u!1 &1450598693
 GameObject:
   m_ObjectHideFlags: 0
