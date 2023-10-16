@@ -3,6 +3,14 @@ using Photon.Realtime;
 using System;
 using UnityEngine;
 using TMPro;
+using UnityEngine.SceneManagement;
+
+public enum eKanInfo
+{
+    none,
+    black,
+    white
+}
 
 public class GameManager : MonoBehaviourPunCallbacks
 {
@@ -19,8 +27,8 @@ public class GameManager : MonoBehaviourPunCallbacks
     public static GameManager instance;
 
     bool isBlack = false;
-
     bool isMyTurn = false;
+    bool isGame = true;
 
     // 왼쪽 아래의 x 50, y 85
     const float START_X = 50 / 2f;
@@ -34,7 +42,10 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     const int MAXINDEX = 15;
 
-    bool[,] stoneArr = new bool[MAXINDEX, MAXINDEX];
+    eKanInfo[,] stoneArr = new eKanInfo[MAXINDEX, MAXINDEX];
+
+    eKanInfo myStone;
+    eKanInfo otherStone;
 
     int xIndex;
     int yIndex;
@@ -52,7 +63,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         {
             for (int j = 0; j < MAXINDEX; j++)
             {
-                stoneArr[i, j] = false;
+                stoneArr[i, j] = eKanInfo.none;
             }
         }
     }
@@ -68,13 +79,15 @@ public class GameManager : MonoBehaviourPunCallbacks
     // Update is called once per frame
     void Update()
     {
+        if (!isGame)
+            return;
+
         if (!isMyTurn)
             return;
 
         if (Input.GetMouseButtonDown(0))
         {
             Vector3 mousePos = Input.mousePosition;
-            text.text += mousePos.ToString() + "\n";
 
             xIndex = (int) ((mousePos.x - HALF_GAP) / GAP);
             yIndex = (int) ((mousePos.y - HALF_GAP) / GAP);
@@ -82,16 +95,16 @@ public class GameManager : MonoBehaviourPunCallbacks
             if (xIndex < 0 || xIndex > MAXINDEX - 1 || yIndex < 0 || yIndex > MAXINDEX - 1)
                 return;
 
-            if (stoneArr[yIndex, xIndex] == true)
+            if (stoneArr[yIndex, xIndex] != eKanInfo.none)
             {
-                Debug.Log("이미 자리가 있음");
                 return;
             }
 
             isMyTurn = false;
-            pv.RPC("NowMyTurn", RpcTarget.Others, 123);
+            pv.RPC("NowMyTurn", RpcTarget.Others, xIndex, yIndex);
 
-            stoneArr[yIndex, xIndex] = true;
+            stoneArr[yIndex, xIndex] = myStone;
+
             mousePos.x = (xIndex * GAP) + START_X;
             mousePos.y = (yIndex * GAP) + START_Y;
 
@@ -101,6 +114,11 @@ public class GameManager : MonoBehaviourPunCallbacks
                 temp = PhotonNetwork.Instantiate("Black", mousePos, Quaternion.identity).transform;
             else
                 temp = PhotonNetwork.Instantiate("White", mousePos, Quaternion.identity).transform;
+
+            if(OnCheckWin(xIndex, yIndex))
+            {
+                pv.RPC("GameOver", RpcTarget.All, myStone + "Win\n");
+            }
         }
     }
 
@@ -122,6 +140,7 @@ public class GameManager : MonoBehaviourPunCallbacks
     {
         text.text += "Create Room\n";
         isMyTurn = true;
+        myStone = eKanInfo.black;
     }
 
     /// <summary>
@@ -132,16 +151,170 @@ public class GameManager : MonoBehaviourPunCallbacks
         text.text += "Room Joined!\n";
 
         isBlack = PhotonNetwork.IsMasterClient;
+
+        if (isBlack)
+        {
+            myStone = eKanInfo.black;
+            otherStone = eKanInfo.white;
+        }
+        else
+        {
+            myStone = eKanInfo.white;
+            otherStone = eKanInfo.black;
+        }
     }
 
     /// <summary>
     /// [PunRPC] 있으면 원격으로 함수 호출 기능
     /// </summary>
     [PunRPC]
-    void NowMyTurn(int x)
+    void NowMyTurn(int x, int y)
     {
         isMyTurn = true;
+        stoneArr[y, x] = otherStone;
+    }
 
-        Debug.Log(x);
+    [PunRPC]
+    void GameOver(string text)
+    {
+        isGame = false;
+        this.text.text = text;
+    }
+
+    struct FindAndX
+    {
+        public int find;
+        public int x;
+    }
+
+    bool OnCheckWin(int x, int y)
+    {
+        int findCount = 0;
+
+        int tempX;
+        int tempY;
+
+        // 가로 계산
+        for(int i = -4; i < 1 ; i++)
+        {
+            findCount = 0;
+
+            for(int j = 0; j < 5 ; j++)
+            {
+                tempX = x + i + j;
+
+                if (tempX < 0 || tempX > 14)
+                    break;
+
+                if (stoneArr[y, tempX] == myStone)
+                {
+                    findCount++;
+                    if(findCount == 5)
+                        return true;
+                }
+            }
+        }
+
+        // 세로 계산
+        for (int i = -4; i < 1; i++)
+        {
+            findCount = 0;
+
+            for (int j = 0; j < 5; j++)
+            {
+                tempY = y + i + j;
+
+                if (tempY < 0 || tempY > 14)
+                    break;
+
+                if (stoneArr[tempY, x] == myStone)
+                {
+                    findCount++;
+                    if (findCount == 5)
+                        return true;
+                }
+            }
+        }
+
+        // 오른쪽 위
+        for (int i = -4; i < 1; i++)
+        {
+            findCount = 0;
+
+            for (int j = 0; j < 5; j++)
+            {
+                tempX = x + i + j;
+                tempY = y + i + j;
+
+                if (tempX < 0 || tempX > 14 || tempY < 0 || tempY > 14)
+                    break;
+
+                if (stoneArr[tempY, tempX] == myStone)
+                {
+                    findCount++;
+                    if (findCount == 5)
+                        return true;
+                }
+            }
+        }
+
+        // 오른쪽 아래
+        for (int i = -4; i < 1; i++)
+        {
+            findCount = 0;
+
+            for (int j = 0; j < 5; j++)
+            {
+                tempX = x + i + j;
+                tempY = y - i - j;
+
+                if (tempX < 0 || tempX > 14 || tempY < 0 || tempY > 14)
+                    break;
+
+                if (stoneArr[tempY, tempX] == myStone)
+                {
+                    findCount++;
+                    if (findCount == 5)
+                        return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    enum eMsgFlag
+    {
+        putStone,
+        win,
+        pushAgree,
+        a,
+        b,
+        c
+    }
+
+    [PunRPC]
+    void Test(int flag)
+    {
+        switch ((eMsgFlag) flag)
+        {
+            case eMsgFlag.putStone:
+                break;
+            case eMsgFlag.win:
+                break;
+            case eMsgFlag.pushAgree:
+                break;
+            case eMsgFlag.a:
+                break;
+            case eMsgFlag.b:
+                break;
+            case eMsgFlag.c:
+                break;
+        }
+    }
+
+    void LordScene()
+    {
+        //SceneManager.LoadScene(SceneManager.GetSceneAt(0));
     }
 }
