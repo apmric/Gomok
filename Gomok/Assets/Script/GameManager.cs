@@ -338,39 +338,4 @@ public class GameManager : MonoBehaviourPunCallbacks
 
         return false;
     }
-
-    enum eMsgFlag
-    {
-        putStone,
-        win,
-        pushAgree,
-        a,
-        b,
-        c
-    }
-
-    [PunRPC]
-    void Test(int flag)
-    {
-        switch ((eMsgFlag) flag)
-        {
-            case eMsgFlag.putStone:
-                break;
-            case eMsgFlag.win:
-                break;
-            case eMsgFlag.pushAgree:
-                break;
-            case eMsgFlag.a:
-                break;
-            case eMsgFlag.b:
-                break;
-            case eMsgFlag.c:
-                break;
-        }
-    }
-
-    void LordScene()
-    {
-        //SceneManager.LoadScene(SceneManager.GetSceneAt(0));
-    }
 }
