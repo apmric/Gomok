@@ -4,6 +4,7 @@ using System;
 using UnityEngine;
 using TMPro;
 using UnityEngine.SceneManagement;
+using System.Collections.Generic;
 
 public enum eKanInfo
 {
@@ -23,12 +24,14 @@ public class GameManager : MonoBehaviourPunCallbacks
     [Header("# TextMeshProUGUI")]
     [SerializeField]
     TextMeshProUGUI text;
+    [SerializeField]
+    GameObject restartBt;
 
     public static GameManager instance;
 
     bool isBlack = false;
     bool isMyTurn = false;
-    bool isGame = true;
+    bool otherPlayerWantRestart = false;
 
     // 왼쪽 아래의 x 50, y 85
     const float START_X = 50 / 2f;
@@ -51,6 +54,9 @@ public class GameManager : MonoBehaviourPunCallbacks
     int yIndex;
 
     PhotonView pv;
+
+    // 내 돌 리스트
+    List<GameObject> myStoneList = new List<GameObject>();
 
     // Start is called before the first frame update
     void Awake()
@@ -79,9 +85,6 @@ public class GameManager : MonoBehaviourPunCallbacks
     // Update is called once per frame
     void Update()
     {
-        if (!isGame)
-            return;
-
         if (!isMyTurn)
             return;
 
@@ -108,12 +111,10 @@ public class GameManager : MonoBehaviourPunCallbacks
             mousePos.x = (xIndex * GAP) + START_X;
             mousePos.y = (yIndex * GAP) + START_Y;
 
-            Transform temp;
-
             if (isBlack)
-                temp = PhotonNetwork.Instantiate("Black", mousePos, Quaternion.identity).transform;
+                myStoneList.Add(PhotonNetwork.Instantiate("Black", mousePos, Quaternion.identity));
             else
-                temp = PhotonNetwork.Instantiate("White", mousePos, Quaternion.identity).transform;
+                myStoneList.Add(PhotonNetwork.Instantiate("White", mousePos, Quaternion.identity));
 
             if(OnCheckWin(xIndex, yIndex))
             {
@@ -164,6 +165,13 @@ public class GameManager : MonoBehaviourPunCallbacks
         }
     }
 
+    public override void OnPlayerLeftRoom(Player otherPlayer)
+    {
+        text.text = "Other Player Left The Game";
+
+        restartBt.SetActive(false);
+    }
+
     /// <summary>
     /// [PunRPC] 있으면 원격으로 함수 호출 기능
     /// </summary>
@@ -177,8 +185,56 @@ public class GameManager : MonoBehaviourPunCallbacks
     [PunRPC]
     void GameOver(string text)
     {
-        isGame = false;
+        isMyTurn = false;
         this.text.text = text;
+        restartBt.SetActive(true);
+    }
+
+    [PunRPC]
+    void ReStartRecv(string text)
+    {
+        this.text.text = "Other Player want Restart Game";
+        otherPlayerWantRestart = true;
+    }
+
+    [PunRPC]
+    public void ReStartPush()
+    {
+        // 상대방이 먼저 재시작 하자고 할 때
+        if(otherPlayerWantRestart)
+        {
+            // 게임 재시작 하는 코드
+            pv.RPC("ReStartGame", RpcTarget.All);
+        }
+        // 내가 먼저 재시작 하자고 할 때
+        else
+        {
+            this.text.text = "ReStart Game\nWating other Player";
+            pv.RPC("ReStartRecv", RpcTarget.Others);
+        }
+
+        restartBt.SetActive(false);
+    }
+
+    [PunRPC]
+    void ReStartGame()
+    {
+        // 돌제거
+        int count = myStoneList.Count;
+        for (int i = 0; i < count; i++) 
+        {
+            PhotonNetwork.DestroyAll(myStoneList[0]);
+            myStoneList.RemoveAt(0);
+        }
+
+        // 돌 배열 초기화
+        stoneArr = new eKanInfo[15, 15];
+
+        text.text = "";
+
+        isMyTurn = isBlack;
+
+        otherPlayerWantRestart = false;
     }
 
     struct FindAndX
