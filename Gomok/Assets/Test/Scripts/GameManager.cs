@@ -15,7 +15,6 @@ namespace Test
         void Awake()
         {
             instance = this;
-
             pv = GetComponent<PhotonView>();
         }
 

@@ -118,7 +118,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &4812111585621507721
 Transform:
   m_ObjectHideFlags: 0
@@ -211,10 +211,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b1a6d7afc04726f40a6613cd3f5bb4a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hat1Prefab: {fileID: 6082077273768026920, guid: 62c2d53322258904290483f5fd8b581c, type: 3}
-  hat2Prefab: {fileID: 146443223389010098, guid: 323dff76cb4effc4681bcc4bfca9e0cb, type: 3}
-  weapon1Prefab: {fileID: 8686188519785479816, guid: 3cf639b45cee23b4481b00685b50e829, type: 3}
-  weapon2Prefab: {fileID: 6139422197419605079, guid: 7992c97a35351874d86a7a88202dc09a, type: 3}
+  itempPrefabs:
+  - {fileID: 6082077273768026920, guid: 62c2d53322258904290483f5fd8b581c, type: 3}
+  - {fileID: 146443223389010098, guid: 323dff76cb4effc4681bcc4bfca9e0cb, type: 3}
+  - {fileID: 8686188519785479816, guid: 3cf639b45cee23b4481b00685b50e829, type: 3}
+  - {fileID: 6139422197419605079, guid: 7992c97a35351874d86a7a88202dc09a, type: 3}
   speed: 15
 --- !u!114 &7449223663443994324
 MonoBehaviour:
