@@ -60,14 +60,13 @@ namespace Test
 
             for (int i = 0; i < itempPrefabs.Length; i++)
             {
-                item[i] = Instantiate(itempPrefabs[i], this.transform.position, this.transform.rotation);
-                item[i].transform.parent = this.transform;
+                item[i] = Instantiate(itempPrefabs[i], this.transform.position, Quaternion.identity, this.transform);
 
                 item[i].SetActive(false);
             }
         }
 
-        public int myItemNow = 0;
+        int myItemNow = 0;
 
         void Equipment()
         {
@@ -76,16 +75,21 @@ namespace Test
             {
                 if(Input.GetKeyDown(startKey + i))
                 {
-                    item[i].SetActive(item[i].activeSelf);
+                    item[i].SetActive(!item[i].activeSelf);
 
                     myItemNow += item[i].activeSelf ? 1 << i : -(1 << i);
+
+                    Debug.Log(myItemNow);
                 }
             }
         }
 
         void ChangeItem(int n)
         {
+            if((n & (1 << 0)) != 0)
+            {
 
+            }
         }
     }
 }
