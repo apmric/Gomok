@@ -12,15 +12,18 @@ namespace Test
     {
         [Header("# Equipment")]
         public GameObject[] itempPrefabs;
+        public GameObject atk;
         [Header("# PlayerInfo")]
         public float speed;
 
         PhotonView pv;
 
-        GameObject[] item;
+        GameObject[] myItem;
 
         float hAxis;
         float vAxis;
+        bool fDown;
+        bool qDown;
 
         Vector3 moveVec = Vector3.zero;
 
@@ -38,6 +41,8 @@ namespace Test
 
             GetInput();
             Move();
+            Turn();
+            Attack();
             Equipment();
         }
 
@@ -45,6 +50,7 @@ namespace Test
         {
             hAxis = Input.GetAxisRaw("Horizontal");
             vAxis = Input.GetAxisRaw("Vertical");
+            fDown = Input.GetMouseButtonDown(0);
         }
 
         void Move()
@@ -54,15 +60,48 @@ namespace Test
             this.transform.position += moveVec * speed * Time.deltaTime;
         }
 
+        void Turn()
+        {
+            this.transform.LookAt(this.transform.position + moveVec);
+        }
+
+        void Attack()
+        {
+            if(fDown)
+            {
+                if (atk.activeSelf)
+                    return;
+
+                StartCoroutine(AttackCoru());
+            }
+        }
+
+        [PunRPC]
+        void AtkSetActive(bool b)
+        {
+            atk.SetActive(b);
+        }
+
+        IEnumerator AttackCoru()
+        {
+            atk.SetActive(true);
+            pv.RPC("AtkSetActive", RpcTarget.Others, atk.activeSelf);
+
+            yield return new WaitForSeconds(0.2f);
+
+            atk.SetActive(false);
+            pv.RPC("AtkSetActive", RpcTarget.Others, atk.activeSelf);
+        }
+
         void EquipmentPrefabs()
         {
-            item = new GameObject[itempPrefabs.Length];
+            myItem = new GameObject[itempPrefabs.Length];
 
             for (int i = 0; i < itempPrefabs.Length; i++)
             {
-                item[i] = Instantiate(itempPrefabs[i], this.transform.position, Quaternion.identity, this.transform);
+                myItem[i] = Instantiate(itempPrefabs[i], this.transform.position, Quaternion.identity, this.transform);
 
-                item[i].SetActive(false);
+                myItem[i].SetActive(false);
             }
         }
 
@@ -75,21 +114,24 @@ namespace Test
             {
                 if(Input.GetKeyDown(startKey + i))
                 {
-                    item[i].SetActive(!item[i].activeSelf);
+                    myItem[i].SetActive(!myItem[i].activeSelf);
 
-                    myItemNow += item[i].activeSelf ? 1 << i : -(1 << i);
+                    myItemNow += myItem[i].activeSelf ? 1 << i : -(1 << i);
 
-                    Debug.Log(myItemNow);
+                    pv.RPC("ChangeItem", RpcTarget.Others, myItemNow);
                 }
             }
         }
 
+        [PunRPC]
         void ChangeItem(int n)
         {
-            if((n & (1 << 0)) != 0)
+            for(int i = 0; i < myItem.Length; i++)
             {
-
+                myItem[i].SetActive((n >> i) % 2 == 1);
             }
         }
     }
 }
+
+// atk가 충돌시 rpc로 함수 부르기 hit
