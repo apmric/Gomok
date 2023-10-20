@@ -212,10 +212,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   itempPrefabs:
-  - {fileID: 6082077273768026920, guid: 62c2d53322258904290483f5fd8b581c, type: 3}
-  - {fileID: 146443223389010098, guid: 323dff76cb4effc4681bcc4bfca9e0cb, type: 3}
-  - {fileID: 8686188519785479816, guid: 3cf639b45cee23b4481b00685b50e829, type: 3}
-  - {fileID: 6139422197419605079, guid: 7992c97a35351874d86a7a88202dc09a, type: 3}
+  - {fileID: 8592809438212461471, guid: 62c2d53322258904290483f5fd8b581c, type: 3}
+  - {fileID: 8969099763900221622, guid: 323dff76cb4effc4681bcc4bfca9e0cb, type: 3}
+  - {fileID: 5756771655081041082, guid: 3cf639b45cee23b4481b00685b50e829, type: 3}
+  - {fileID: 8420988311017505434, guid: 7992c97a35351874d86a7a88202dc09a, type: 3}
   speed: 15
 --- !u!114 &7449223663443994324
 MonoBehaviour:
