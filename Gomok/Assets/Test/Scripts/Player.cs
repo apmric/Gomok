@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Test
 {
@@ -14,9 +15,11 @@ namespace Test
         public GameObject[] itempPrefabs;
         public GameObject atk;
         [Header("# PlayerInfo")]
+        public float hp = 3;
         public float speed;
+        public Slider hpBar;
 
-        PhotonView pv;
+        public PhotonView pv { get; private set; }
 
         GameObject[] myItem;
 
@@ -31,6 +34,7 @@ namespace Test
         {
             pv = GetComponent<PhotonView>();
 
+            SetHPBar();
             EquipmentPrefabs();
         }
 
@@ -44,6 +48,13 @@ namespace Test
             Turn();
             Attack();
             Equipment();
+        }
+
+        void SetHPBar()
+        {
+            hpBar.maxValue = hp;
+            hpBar.minValue = 0;
+            hpBar.value = hp;
         }
 
         void GetInput()
@@ -130,6 +141,16 @@ namespace Test
             {
                 myItem[i].SetActive((n >> i) % 2 == 1);
             }
+        }
+
+        [PunRPC]
+        public void Hit()
+        {
+            if (hp <= 0)
+                return;
+
+            hp--;
+            hpBar.value = hp;
         }
     }
 }

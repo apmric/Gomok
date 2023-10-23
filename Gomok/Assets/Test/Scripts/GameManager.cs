@@ -39,7 +39,7 @@ namespace Test
         public override void OnConnectedToMaster()
         {
             RoomOptions options = new RoomOptions();
-            options.MaxPlayers = 2;
+            options.MaxPlayers = 3;
             PhotonNetwork.JoinOrCreateRoom("Room1", options, null);
         }
 

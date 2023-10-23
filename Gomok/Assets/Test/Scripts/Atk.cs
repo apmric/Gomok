@@ -4,14 +4,15 @@ using UnityEngine;
 using Photon.Pun;
 using Unity.VisualScripting;
 using Test;
+using System.ComponentModel;
 
 public class Atk : MonoBehaviour
 {
     PhotonView pv;
 
-    void Awake()
+    private void Awake()
     {
-        pv = GetComponent<PhotonView>();    
+        pv = GetComponent<PhotonView>();
     }
 
     void OnEnable()
@@ -23,13 +24,10 @@ public class Atk : MonoBehaviour
     {
         if (!pv.IsMine && other.CompareTag("Player") && other.GetComponent<PhotonView>().IsMine)
         {
-            pv.RPC("Damage", RpcTarget.All, 10f);
+            if (other != null)
+            {
+                other.GetComponent<PhotonView>().RPC("Hit", RpcTarget.All);
+            }
         }
-    }
-
-    [PunRPC]
-    void Damage(float damage)
-    {
-        Debug.Log("Damage: " + damage);
     }
 }
