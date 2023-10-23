@@ -9,6 +9,7 @@ namespace Test
     public class GameManager : MonoBehaviourPunCallbacks
     {
         public static GameManager instance;
+
         PhotonView pv;
 
         // Start is called before the first frame update
